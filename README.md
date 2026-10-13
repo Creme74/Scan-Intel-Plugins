@@ -4,7 +4,7 @@ A small macOS app that scans your audio plug-ins and lists the ones that are a p
 
 Formerly **Scan Intel AU** (V1.1, Audio Units only).
 
-## [⬇ Download Scan Intel Plugins V2](https://github.com/Creme74/Scan-Intel-Plugins/raw/main/Scan%20Intel%20Plugins%20V2%20%5BCreme%5D.zip)
+[Download Scan Intel Plugins V2](https://github.com/Creme74/Scan-Intel-Plugins/raw/main/Scan%20Intel%20Plugins%20V2%20%5BCreme%5D.zip)
 
 Then follow the [installation steps](#installation) below.
 
