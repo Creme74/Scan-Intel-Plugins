@@ -1,33 +1,120 @@
-# Scan Intel AU V1.1 [Creme]
+# Scan Intel Plugins V2 [Creme]
 
-## Overview
-**Scan Intel AU V1.1 [Creme]** is a macOS Automator application designed to identify Audio Unit (AU) components that are **Intel-only** and not natively compatible with Apple Silicon (ARM64). This tool helps users of Logic Pro and other DAWs on Apple Silicon Macs to manage and optimize their plugin libraries.
+A small macOS app that scans your audio plug-ins and lists the ones that are a problem on Apple Silicon Macs (M1, M2, M3, M4…): plug-ins that still depend on Rosetta, and plug-ins that cannot load at all anymore.
 
-## Features
-- Scans the `/Library/Audio/Plug-Ins/Components` directory.
-- Detects AU components that only have Intel binaries.
-- Excludes components that support native ARM64 binaries.
-- Outputs a detailed report in `intel_only_plugins_report.txt`.
+Formerly **Scan Intel AU** (V1.1, Audio Units only).
 
-## How It Works
-The app:
-1. Recursively scans each `.component` folder for binary files.
-2. Uses the `file` command to determine the architecture of each binary.
-3. Flags components as **Intel-only** if no ARM64 binaries are found.
+## What it finds
+
+| Category | Meaning |
+|---|---|
+| **Need Rosetta** | Intel 64-bit only: no Apple Silicon code inside |
+| **Cannot load at all** | 32-bit Intel or PowerPC: no current Mac or host can load them, Rosetta or not |
+| **Could not be analysed** | Damaged or incomplete plug-ins, or aliases pointing to a missing file |
+
+Native plug-ins (Apple Silicon or Universal) are counted but not listed: the report only shows what needs attention.
+
+## Formats and folders
+
+| Format | Folder |
+|---|---|
+| AU | `Library/Audio/Plug-Ins/Components` |
+| VST | `Library/Audio/Plug-Ins/VST` |
+| VST3 | `Library/Audio/Plug-Ins/VST3` |
+| AAX | `Library/Application Support/Avid/Audio/Plug-Ins` |
+| CLAP | `Library/Audio/Plug-Ins/CLAP` |
+
+Each folder is scanned in both `/Library` (all users) and `~/Library` (your user), including vendor sub-folders.
 
 ## Installation
-1. Download the app.
-2. Unzip the file.
-3. Move the `.app` file to your desired location (e.g., `Applications` folder or Desktop).
+
+1. Download **`Scan Intel Plugins V2 [Creme].zip`** from this page.
+2. Unzip it by **double-clicking** it in the Finder (don't use `unzip` in the Terminal: it drops part of the app's signature).
+3. Move **Scan Intel Plugins.app** to your **Applications** folder.
+4. First launch: macOS blocks the app because it is not notarized by Apple. Open **System Settings > Privacy & Security**, scroll down and click **Open Anyway**. You only need to do this once.
+
+If macOS still refuses to open it, run this once in the Terminal:
+
+```
+xattr -dr com.apple.quarantine "/Applications/Scan Intel Plugins.app"
+```
 
 ## Usage
-1. Double-click the app to run it. (You might need to right click the very first time you open the Application to pass gatekeeper)
-2. The app will scan the `Components` directory and generate a report. (you'll see a little wheel on the top right of your screen)
-3. Upon completion, the report `intel_only_plugins_report.txt` will open automatically. (it may take more or less time considering the number of components)
 
-## Requirements
-- Tested on macOS Sierra and macOS Sonoma but should work on any macOS above.
+1. Double-click the app. A small gear spins in the menu bar while it scans.
+2. When the scan is done, a notification shows the summary and the report opens. It is saved on your Desktop as `Plugin Rosetta Report <date>.txt`.
+   The first time, macOS asks to let the app write to your Desktop. If you refuse, the report is saved in your home folder.
+
+Example report:
+
+```
+PLUGIN ROSETTA REPORT
+Scan Intel Plugins [Creme] V2.0 - 2026-10-13 01:58
+Mac: Apple Silicon, macOS 26.0
+
+412 plug-ins scanned (AU, VST, VST3, AAX, CLAP)
+  Need Rosetta ............. 3
+  Cannot load at all ....... 1
+  Could not be analysed .... 0
+
+
+NEED ROSETTA - Intel 64-bit only (3)
+====================================
+
+  AU
+    OldSynth  (1.2.0)
+
+  VST3
+    Legacy Verb  (2.4.1)
+    Old Delay  (1.0)
+
+
+CANNOT LOAD AT ALL - 32-bit Intel or PowerPC (1)
+================================================
+No current Mac or host can load these, Rosetta or not.
+Remove them, or replace them with a 64-bit version.
+
+  AU
+    Vintage32  (1.0)
+```
+
+## Good to know
+
+- **Intel AUs** still load in a host running natively (Logic, Live…): macOS runs them in a separate process translated by Rosetta. If one doesn't show up in Logic, open Logic once with *Open using Rosetta* (Finder > Get Info), then reopen it normally. Intel-only ARA plug-ins need the host itself to run under Rosetta.
+- **Intel VST, VST3, AAX and CLAP** plug-ins only load when the host itself runs under Rosetta.
+- Apple has announced that macOS 27 is the last version with the full version of Rosetta, so these plug-ins are worth updating or replacing.
+
+## Running the script directly
+
+The app runs [`scan_intel_plugins.sh`](scan_intel_plugins.sh), which you can also run from the Terminal:
+
+```
+bash scan_intel_plugins.sh
+```
+
+It only uses tools present on every Mac (`bash`, `file`, `find`, `PlistBuddy`): no Xcode or Command Line Tools needed.
+
+## How it works
+
+For each plug-in bundle, the app reads `Contents/Info.plist` to find the plug-in's main executable, then uses `file` to list the architectures it contains:
+
+- `arm64` present → native
+- `x86_64` but no `arm64` → needs Rosetta
+- only `i386` and/or `ppc` → cannot load at all
+
+## What's new in V2.0
+
+- New name: **Scan Intel Plugins** (was Scan Intel AU)
+- Scans **VST, VST3, AAX and CLAP** in addition to AU, in both `/Library` and `~/Library`, including vendor sub-folders
+- Fixed: plug-ins with spaces in their name were wrongly reported as Intel-only
+- Fixed: checks the plug-in's main executable instead of every file in the bundle (faster, and a Universal helper tool no longer hides an Intel-only plug-in)
+- 32-bit and PowerPC plug-ins are now reported separately from Intel 64-bit ones
+- Damaged plug-ins and broken aliases are reported
+- Clearer report: summary, plug-ins grouped by format with their version, saved on the Desktop with the date
+- Notification at the end of the scan
 
 ## Acknowledgments
-Special thanks Vito my one and only Beta Tester (Team Audiocomix)
 
+Special thanks to Vito, my one and only beta tester (Team Audiocomix).
+
+Stop geeking, make some music. → [kidcreme.bandcamp.com](https://kidcreme.bandcamp.com/)
