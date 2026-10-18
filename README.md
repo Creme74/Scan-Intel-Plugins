@@ -45,7 +45,7 @@ xattr -dr com.apple.quarantine "/Applications/Scan Intel Plugins.app"
 
 ## Usage
 
-1. Double-click the app. A small gear spins in the menu bar while it scans.
+1. Double-click the app. A small black & white window shows the progress of the scan: how many plug-ins have been checked, and which one is being analysed.
 2. When the scan is done, a notification shows the summary and the report opens. It is saved on your Desktop as `Plugin Rosetta Report <date>.txt`.
    The first time, macOS asks to let the app write to your Desktop. If you refuse, the report is saved in your home folder.
 
@@ -53,7 +53,7 @@ Example report:
 
 ```
 PLUGIN ROSETTA REPORT
-Scan Intel Plugins [Creme] V2.0 - 2026-10-13 01:58
+Scan Intel Plugins [Creme] V2.1 - 2026-10-18 08:30
 Mac: Apple Silicon, macOS 26.0
 
 412 plug-ins scanned (AU, VST, VST3, AAX, CLAP)
@@ -96,7 +96,9 @@ The app runs [`scan_intel_plugins.sh`](scan_intel_plugins.sh), which you can als
 bash scan_intel_plugins.sh
 ```
 
-It only uses tools present on every Mac (`bash`, `file`, `find`, `PlistBuddy`): no Xcode or Command Line Tools needed.
+A text progress bar is shown in the Terminal while it scans.
+
+It only uses tools present on every Mac (`bash`, `file`, `find`, `PlistBuddy`, `osascript`): no Xcode or Command Line Tools needed.
 
 ## How it works
 
@@ -105,6 +107,11 @@ For each plug-in bundle, the app reads `Contents/Info.plist` to find the plug-in
 - `arm64` present → native
 - `x86_64` but no `arm64` → needs Rosetta
 - only `i386` and/or `ppc` → cannot load at all
+
+## What's new in V2.1
+
+- **Progress bar**: a small black & white window, old-school computer style, follows the scan
+- **Optimized code, faster scan**: the app now launches about half as many programs per plug-in (the version number is only read for the plug-ins listed in the report). Results are exactly the same as with V2.0
 
 ## What's new in V2.0
 
