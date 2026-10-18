@@ -46,6 +46,9 @@ xattr -dr com.apple.quarantine "/Applications/Scan Intel Plugins.app"
 ## Usage
 
 1. Double-click the app. A small black & white window shows the progress of the scan: how many plug-ins have been checked, and which one is being analysed.
+
+   <img src="images/progress-window.png" width="437" alt="Scan Intel Plugins progress window">
+
 2. When the scan is done, a notification shows the summary and the report opens. It is saved on your Desktop as `Plugin Rosetta Report <date>.txt`.
    The first time, macOS asks to let the app write to your Desktop. If you refuse, the report is saved in your home folder.
 
